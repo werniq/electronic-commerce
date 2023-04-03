@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"new-e-commerce/models"
+	"time"
 )
 
 type TokenData struct {
@@ -31,7 +33,15 @@ func (app *application) Authorize(c *gin.Context) {
 		return
 	}
 	user.UserID = id
+	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 
+	if err != nil {
+		c.JSON(400, gin.H{"error": "error generating password " + err.Error()})
+		return
+	}
+
+	user.Password = string(pass)
+	user.CreatedAt = time.Now()
 	err = app.database.InsertUser(user)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
@@ -43,31 +53,26 @@ func (app *application) Authorize(c *gin.Context) {
 // GenerateToken generates JWT authentication token for user
 func (app *application) GenerateToken(c *gin.Context) {
 	var r TokenData
-	var u models.User
 	if err := c.ShouldBindJSON(&r); err != nil {
 		c.JSON(400, gin.H{"error": "error decoding request body: " + err.Error()})
-		c.Abort()
 		return
 	}
 
-	user, err := app.database.FindUserByEmail(u.Email)
+	user, err := app.database.FindUserByEmail(r.Email)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "user not found " + err.Error()})
-		c.Abort()
 		return
 	}
 
 	err = user.CheckPassword(r.Password)
 	if err != nil {
 		c.JSON(401, gin.H{"invalid credentials ": err.Error()})
-		c.Abort()
 		return
 	}
 
 	t, err := models.GenerateToken(user.Email, user.Username)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "error generating token for user: " + user.Email + " " + err.Error()})
-		c.Abort()
 		return
 	}
 

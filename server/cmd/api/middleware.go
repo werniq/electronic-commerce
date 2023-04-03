@@ -35,12 +35,14 @@ func (app *application) Auth() gin.HandlerFunc {
 		token := c.GetHeader("Authorization")
 		if token == "" {
 			c.JSON(401, gin.H{"error": "no authentication header received"})
+			c.Abort()
 			return
 		}
 
 		err := models.ValidateToken(token)
 		if err != nil {
 			c.JSON(401, gin.H{"error": err.Error()})
+			c.Abort()
 			return
 		}
 		c.Next()

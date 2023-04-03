@@ -8,7 +8,7 @@ func (app *application) SetupRoutes(r *gin.Engine) {
 	r.GET("/login", app.Login)
 	r.GET("/my-profile", app.AuthenticationHandler)
 	r.GET("/catalogue", app.AuthenticationHandler)
-	r.GET("/create", app.AuthenticationHandler)
+	r.GET("/create", app.CreateProduct)
 	r.GET("/edit/{id}", app.AuthenticationHandler)
 	r.GET("/delete/{id}", app.AuthenticationHandler)
 	r.GET("/details/{id}", app.AuthenticationHandler)

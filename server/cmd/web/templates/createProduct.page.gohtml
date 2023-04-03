@@ -1,0 +1,198 @@
+{{template "base" .}}
+
+    {{define "title"}}
+        Create Product
+    {{end}}
+
+    {{define "style"}}
+        <style>
+            .card-registration .select-input.form-control[readonly]:not([disabled]) {
+            font-size: 1rem;
+            line-height: 2.15;
+            padding-left: .75em;
+            padding-right: .75em;
+        }
+
+            .card-registration .select-arrow {
+                top: 13px;
+            }
+            .margin {
+                margin-left: 250px;
+            }
+        </style>
+    {{end}}
+
+    {{define "content"}}
+        <div class="margin">
+            <section class="h-60">
+                <div class="container py-5 h-60">
+                    <div class="row d-flex justify-content-center align-items-center h-60">
+                        <div class="col">
+                            <div class="card card-registration">
+                                <div class="row g-0">
+                                    <div class="col-xl-6 d-none d-xl-block">
+                                        <img src="https://cdn.wallpapersafari.com/67/9/UhHYNg.jpg"
+                                             alt="Sample photo" class="img-fluid fill"
+                                             style="border-radius: .5rem; margin-left: 5px; margin-top: 30px; width: 100%; height: 90%;" />
+                                    </div>
+                                    <div class="col-xl-6">
+                                        <div class="card-body p-md-5 text-black">
+                                            <h3 class="mb-5 text-uppercase">Product creation form</h3>
+
+                                            <div class="row">
+                                                <div class="col-md-6 mb-4">
+                                                    <div class="form-outline">
+                                                        <input type="text" id="book-title" class="form-control form-control-lg" />
+                                                        <label class="form-label" for="form3Example1m">Book Title</label>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6 mb-4">
+                                                    <div class="form-outline">
+                                                        <input type="text" id="book-desc" class="form-control form-control-lg" />
+                                                        <label class="form-label" for="form3Example1n">Book Description</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6 mb-4">
+                                                    <div class="form-outline">
+                                                        <input type="text" id="book-author" class="form-control form-control-lg" />
+                                                        <label class="form-label" for="form3Example1m1">Book Author</label>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6 mb-4">
+                                                    <div class="form-outline">
+                                                        <input type="text" id="book-additional-info" placeholder="Leave empty, if not needed" class="form-control form-control-lg" />
+                                                        <label class="form-label" for="form3Example1n1">Additional information about book</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-outline mb-4">
+                                                <input type="n" id="book-price" placeholder="0.00" class="form-control form-control-lg" />
+                                                <label class="form-label" for="form3Example8">Price</label>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6 mb-4">
+                                                    <select id="book-category" class="select">
+                                                        <option value="1">Category</option>
+                                                        <option value="2">Horrors</option>
+                                                        <option value="3">Comedy</option>
+                                                        <option value="4">Thrillers</option>
+                                                        <option value="5">Adventures</option>
+                                                        <option value="6">Business</option>
+                                                        <option value="7">Self Development</option>
+                                                        <option value="8">Economics</option>
+                                                        <option value="9">Philosophy</option>
+                                                        <option value="10">History</option>
+                                                        <option value="11">Fiction</option>
+                                                        <option value="12">Non Fiction</option>
+                                                    </select>
+                                                </div>
+
+                                                <div id="book-additional-category" class="col-md-6 mb-4">
+                                                    <select class="select">
+                                                        <option value="1">Additional Category</option>
+                                                        <option value="2">Horrors</option>
+                                                        <option value="3">Comedy</option>
+                                                        <option value="4">Thrillers</option>
+                                                        <option value="5">Adventures</option>
+                                                        <option value="6">Business</option>
+                                                        <option value="7">Self Development</option>
+                                                        <option value="8">Economics</option>
+                                                        <option value="9">Philosophy</option>
+                                                        <option value="10">History</option>
+                                                        <option value="11">Fiction</option>
+                                                        <option value="12">Non Fiction</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-outline mb-4">
+                                                <input type="date" id="book-issue-date" class="form-control form-control-lg" />
+                                                <label class="form-label" for="form3Example9">Date of Issue</label>
+                                            </div>
+
+                                            <div class="form-outline mb-4">
+                                                <input type="text" id="book-quote" class="form-control form-control-lg" />
+                                                <label class="form-label" for="form3Example90">Quote from Book(optional)</label>
+                                            </div>
+
+                                            <div class="form-outline mb-4">
+                                                <label class="form-label" for="form3Example99">Book's Photo</label>
+                                                <input type="file" id="book-photo" placeholder="Photo of your product" id="form3Example97" class="form-control" />
+                                            </div>
+
+                                            <div class="d-flex justify-content-end pt-3">
+                                                <button type="button" class="btn btn-warning btn-lg ms-2">Submit form</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    {{end}}
+
+
+{{define "js"}}
+    <script>
+
+        checkAuth()
+
+        function SendData() {
+            let title = document.getElementById("book-title").value
+            let description = document.getElementById("book-desc").value
+            let author = document.getElementById("book-author").value
+            let price = document.getElementById("book-price").value
+            let category = document.getElementById("book-category").value
+            let addCategory = document.getElementById("book-additional-category").value
+            let addInfo = document.getElementById("book-additional-info").value
+            let issueDate = document.getElementById("book-issue-date").value
+            let photo = document.getElementById("book-photo").value
+            let quote = document.getElementById("book-quote").value
+
+            let requestBody = {
+                "title": title,
+                "description": description,
+                "author": author,
+                "price": price,
+                "category": category,
+                "addCategory": addCategory,
+                "addInfo": addInfo,
+                "issueDate": issueDate,
+                "photo": photo,
+                "quote": quote
+            }
+
+            const headers = new Headers()
+            headers.append("Content-Type", "application/json")
+            headers.append("Accept", "application/json")
+
+            let request = {
+                method: 'post',
+                headers: headers,
+                body: JSON.stringify(requestBody)
+            }
+
+            fetch("{{.API}}/api/create", request)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error)
+                    } else {
+                        console.log(data.message)
+                        location.href=""
+                    }
+                })
+
+        }
+    </script>
+{{end}}

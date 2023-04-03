@@ -626,7 +626,7 @@
                         <li><a href="/catalogue">Catalog</a></li>
                         <li><a id="register-link" href="/register">Register</a></li>
                         <li><a id="login-link"  class="hidden" href="/login">Login</a></li>
-                        <li><a id="logout-link" class="hidden" href="/logout">Logout</a></li>
+                        <li><a id="logout-link" class="hidden" href="javascript:void(0)" onclick="logout()">Logout</a></li>
 
                     </ul>
                 </nav>
@@ -651,17 +651,17 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             if (localStorage.getItem("token") !== null) {
-                loginLink.classList.remove("hidden")
-                logoutLink.classList.add("hidden")
+                loginLink.classList.add("d-none")
+                logoutLink.classList.remove("d-none")
             } else {
-                loginLink.classList.add("hidden")
-                logoutLink.classList.remove("hidden")
+                loginLink.classList.remove("d-none")
+                logoutLink.classList.add("d-none")
             }
         })
 
         function logout() {
             localStorage.removeItem("token");
-            localStorage.removeItem("token_expiry");
+            localStorage.removeItem("tokenExpiry");
             location.href = "/login";
         }
 
@@ -684,12 +684,12 @@
                     .then(response => response.json())
                     .then(function(data){
                         if (data.error === true) {
-                            console.log("not logged in");
+                            alert("not logged in");
                             location.href = "/login";
                         } else {
                             localStorage.setItem("token", data.token)
                             localStorage.setItem("tokenExpiry", data.tokenExpiry)
-                            console.log("Logged in");
+                            alert("logged in");
                         }
                 })
             }
