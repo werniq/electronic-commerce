@@ -1,84 +1,114 @@
-package main
+{{template "base" .}}
 
-import (
-"embed"
-"fmt"
-"html/template"
-"net/http"
-)
+    {{define "title"}}
+        Home page
+    {{end}}
 
-type templateData struct {
-StringMap      		  map[string]string
-IntMap         		  map[string]int
-FloatMap       		  map[string]float32
-Data           		  map[string]interface{}
-IsAuthenticated 	  int
-MainnetAddress		  string
-ErrorData			  []string
-StripeSecretKey		  string
-StripePublishableKey  string
-CSRFToken       	  string
-Flash           	  string
-Warning         	  string
-Error           	  string
-API             	  string
-CSSVersion      	  string
-}
+        {{define "style"}}
+            <style>
+                .greet-card {
+                    color: navajowhite;
+                    padding: 20px;
+                    justify-content: center;
+                    display: flex;
+                    width: 500px;
+                    font-family: 'Nunito', sans-serif;
+                    height: 600px;
+                    margin-left: 150px;
+                }
 
-//go:embed templates
-var templateFS embed.FS
+                .greet-h {
+                    font-size: 25px;
+                    font-family: 'Nunito', sans-serif;
+                    margin-top: 50px;
+                    font-size: calc(1.375rem + 1.5vw);
+                    margin-left: 550px;
+                    z-index: 1;
+                    color: antiquewhite;
+                }
 
-func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
-td.API = app.cfg.api
-td.MainnetAddress = "0x59ABDFCc700DfB6fFf671B2198B26107f6AFE036"
-td.StripeSecretKey = app.cfg.stripe.secret
-td.StripePublishableKey = app.cfg.stripe.key
-return td
-}
+                p {
+                    z-index: 1;
+                    margin-top: 50px;
+                    max-width: 400px;
+                    margin-bottom: 1rem;
+                    margin-left: 550px;
+                    color: antiquewhite;
+                    font-family: monospace;
+                    font-size: 22px;
+                }
+            </style>
 
-func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, page string, td *templateData) error {
-var t *template.Template
-var err error
-templateToRender := fmt.Sprintf("templates/%s.page.gohtml", page)
 
-_, templateInMap := app.templateCache[templateToRender]
+        {{end}}
 
-if app.cfg.env == "production" && templateInMap {
-t = app.templateCache[templateToRender]
-} else {
-t, err = app.parseTemplate(page, templateToRender)
-if err != nil {
-app.errorLog.Println(err)
-return err
-}
-}
+    {{define "content"}}
+        <div>
+            <div class="stars">
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+            </div>
+            <div class="greet-card">
+                <p class="greet-h">Welcome to my website!</p>
+                <p class="greet-text">
+                    Welcome to our online store!
+                    We are thrilled to have you here and are excited to offer you a wide range of high-quality products at competitive prices.
+                    Whether you're searching for the perfect gift, upgrading your home or office, or simply treating yourself to something special,
+                    we have everything you need to make your shopping experience quick, easy, and enjoyable. Thank you for choosing us as your go-to
+                    destination for all your shopping needs. Happy browsing!
+                </p>
+            </div>
+    </div>
+    {{end}}
 
-if td == nil {
-td = &templateData{}
-}
+    {{define "js"}}
 
-td = app.addDefaultData(td, r)
-
-err = t.Execute(w, td)
-if err != nil {
-app.errorLog.Println(err)
-return err
-}
-
-return nil
-}
-
-func (app *application) parseTemplate(page, templateToRender string) (*template.Template, error) {
-var t *template.Template
-var err error
-
-t, err = template.New(fmt.Sprintf("%s.page.gohtml", page)).ParseFS(templateFS, "templates/base.layout.gohtml", templateToRender)
-
-if err != nil {
-app.errorLog.Println(err)
-return nil, err
-}
-
-app.templateCache[templateToRender] = t
-return t, nil
-}
+    {{end}}
