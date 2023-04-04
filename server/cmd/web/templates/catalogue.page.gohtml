@@ -1,0 +1,32 @@
+{{template "base" .}}
+
+    {{define "title"}}
+        Catalogue
+    {{end}}
+
+
+    {{define "content"}}
+        <div class="">
+            {{range $i, $book := index .Data "books" }}
+                <div class="card" style="width: 18rem;">
+                    <img src="..." class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h2 class="card-title"> {{$book.Title}}         </h2>
+                        <p class="card-text">   {{$book.Description}}   </p>
+                        <h3 class="card-title"> {{$book.Price}}         </h3>
+                        <h3 class="card-title"> {{$book.Author}}        </h3>
+                        <h4 class="card-title"> {{$book.QuoteFrom}}     </h4>
+                        <h4 class="card-title"> {{$book.Language}}      </h4>
+                        <h5 class="card-title"> {{$book.DateOfIssue}}   </h5>
+
+                        <a href="#" class="btn btn-primary">Order book</a>
+                    </div>
+                </div>
+            {{end}}
+        </div>
+    {{end}}
+
+
+    {{define "js"}}
+        
+    {{end}}

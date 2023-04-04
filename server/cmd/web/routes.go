@@ -7,7 +7,7 @@ func (app *application) SetupRoutes(r *gin.Engine) {
 	r.GET("/register", app.RegisterHandler)
 	r.GET("/login", app.Login)
 	r.GET("/my-profile", app.AuthenticationHandler)
-	r.GET("/catalogue", app.AuthenticationHandler)
+	r.GET("/catalogue", app.Catalogue)
 	r.GET("/create", app.CreateProduct)
 	r.GET("/edit/{id}", app.AuthenticationHandler)
 	r.GET("/delete/{id}", app.AuthenticationHandler)
@@ -16,4 +16,5 @@ func (app *application) SetupRoutes(r *gin.Engine) {
 	r.GET("/reset-password", app.AuthenticationHandler)
 	r.GET("/forgot-password", app.AuthenticationHandler)
 	r.GET("/contact", app.AuthenticationHandler)
+	r.POST("/get-user-info", app.GetUserInfo)
 }

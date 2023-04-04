@@ -622,7 +622,7 @@
                 <nav class="main-nav" role="navigation">
                     <ul class="unstyled list-hover-slide">
                         <li><a href="/">Home</a></li>
-                        <li><a href="/search">Work</a></li>
+                        <li><a href="/create">Create</a></li>
                         <li><a href="/catalogue">Catalog</a></li>
                         <li><a id="register-link" href="/register">Register</a></li>
                         <li><a id="login-link"  class="hidden" href="/login">Login</a></li>
@@ -672,8 +672,8 @@
             } else {
                 let token = localStorage.getItem("token");
                 let myHeaders = new Headers();
-                myHeaders.append("Content-Type", "application/json");
                 myHeaders.append("Authorization", "Bearer " + token);
+                myHeaders.append("Content-Type", "application/json");
 
                 const requestOptions = {
                     method: "POST",
@@ -689,12 +689,29 @@
                         } else {
                             localStorage.setItem("token", data.token)
                             localStorage.setItem("tokenExpiry", data.tokenExpiry)
+                            localStorage.setItem("email", data.email)
                             alert("logged in");
                         }
                 })
+
+                let userData = {
+                    "email": data.email,
+                    "token": data.token,
+                    "tokenExpiry": data.tokenExpiry
+                }
+
+                const secondRequestOptions = {
+                    method: "POST",
+                    headers: myHeaders,
+                    body: JSON.stringify(userData)
+                }
+
+                fetch("http://localhost:4000/get-user-info", secondRequestOptions)
+                    .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.error(error));
             }
         }
-        // checkAuth()
 
     </script>
         {{block "js" .}}

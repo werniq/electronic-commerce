@@ -71,6 +71,8 @@
                             } else {
                                 let token = data.token
                                 let tokenExpiry = data.tokenExpiry
+                                console.log(data.token)
+                                console.log(data.tokenExpiry)
                                 localStorage.setItem("token", token)
                                 localStorage.setItem("tokenExpiry", tokenExpiry)
                                 alert("successfully authenticated!")

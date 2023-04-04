@@ -25,3 +25,18 @@ func (u *User) CheckPassword(password string) (err error) {
 	}
 	return
 }
+
+// ChangeUsername function used for changing user's username
+func (u *User) ChangeUsername(us string) {
+	u.Username = us
+}
+
+// ChangePassword function used for changing user's password
+func (u *User) ChangePassword(newPassword string) (err error) {
+	pass, err := bcrypt.GenerateFromPassword([]byte(newPassword), 10)
+	if err != nil {
+		return
+	}
+	u.Password = string(pass)
+	return nil
+}

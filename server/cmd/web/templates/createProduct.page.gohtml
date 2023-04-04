@@ -123,12 +123,17 @@
                                             </div>
 
                                             <div class="form-outline mb-4">
+                                                <input type="text" id="book-lang" class="form-control form-control-lg" />
+                                                <label class="form-label" for="form3Example90">Language</label>
+                                            </div>
+
+                                            <div class="form-outline mb-4">
                                                 <label class="form-label" for="form3Example99">Book's Photo</label>
                                                 <input type="file" id="book-photo" placeholder="Photo of your product" id="form3Example97" class="form-control" />
                                             </div>
 
                                             <div class="d-flex justify-content-end pt-3">
-                                                <button type="button" class="btn btn-warning btn-lg ms-2">Submit form</button>
+                                                <button onclick="SendData()" type="button" class="btn btn-warning btn-lg ms-2">Submit form</button>
                                             </div>
                                         </div>
                                     </div>
@@ -145,19 +150,19 @@
 {{define "js"}}
     <script>
 
-        checkAuth()
-
         function SendData() {
             let title = document.getElementById("book-title").value
             let description = document.getElementById("book-desc").value
             let author = document.getElementById("book-author").value
-            let price = document.getElementById("book-price").value
+            let price = parseFloat(document.getElementById("book-price").value)
             let category = document.getElementById("book-category").value
             let addCategory = document.getElementById("book-additional-category").value
             let addInfo = document.getElementById("book-additional-info").value
             let issueDate = document.getElementById("book-issue-date").value
-            let photo = document.getElementById("book-photo").value
+            // let photoInput = document.getElementById("book-photo")
             let quote = document.getElementById("book-quote").value
+            let language = document.getElementById("book-lang").value
+            // let photo = photoInput.files[0]
 
             let requestBody = {
                 "title": title,
@@ -168,13 +173,15 @@
                 "addCategory": addCategory,
                 "addInfo": addInfo,
                 "issueDate": issueDate,
-                "photo": photo,
-                "quote": quote
+                "language": language,
+                // "photo": photo,
+                "quoteFrom": quote
             }
 
             const headers = new Headers()
             headers.append("Content-Type", "application/json")
             headers.append("Accept", "application/json")
+            headers.append("Authorization", localStorage.getItem("token"))
 
             let request = {
                 method: 'post',
@@ -189,7 +196,7 @@
                         console.error(data.error)
                     } else {
                         console.log(data.message)
-                        location.href=""
+                        location.href="/"
                     }
                 })
 

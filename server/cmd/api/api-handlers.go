@@ -4,12 +4,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"new-e-commerce/models"
+	"strings"
 	"time"
 )
 
 type TokenData struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type Book struct {
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       float32   `json:"price"`
+	Author      string    `json:"author"`
+	Category    string    `json:"category"`
+	AddCategory string    `json:"addCategory"`
+	DateOfIssue time.Time `json:"date_of_issue"`
+	QuoteFrom   string    `json:"quoteFrom"`
+	Language    string    `json:"language"`
 }
 
 // Authorize registers user in this website
@@ -66,7 +80,7 @@ func (app *application) GenerateToken(c *gin.Context) {
 
 	err = user.CheckPassword(r.Password)
 	if err != nil {
-		c.JSON(401, gin.H{"invalid credentials ": err.Error()})
+		c.JSON(401, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -83,7 +97,56 @@ func (app *application) GenerateToken(c *gin.Context) {
 	})
 }
 
-func (app *application) Create(c *gin.Context)  {}
+// Create "/create" is used for creating new books
+func (app *application) Create(c *gin.Context) {
+	book := &Book{}
+	err := c.ShouldBindJSON(&book)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	author := strings.Split(book.Author, " ")
+	if len(author) <= 1 {
+		c.JSON(400, gin.H{"error": "wrong author name"})
+		return
+	}
+
+	modelBook := &models.Book{
+		Title:       book.Title,
+		Description: book.Description,
+		Price:       int(book.Price),
+		Author: &models.Author{
+			Firstname: author[0],
+			Lastname:  author[1],
+		},
+		DateOfIssue: book.DateOfIssue,
+		QuoteFrom:   book.QuoteFrom,
+		Language:    book.Language,
+	}
+
+	err = app.database.InsertBook(modelBook)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "error inserting book: " + err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"msg": "book soon will appear in catalogue :)"})
+}
+
+func (app *application) Catalogue(c *gin.Context) {
+	books, err := app.database.GetAllBooks()
+	if err != nil {
+		c.JSON(400, gin.H{"error": "error getting all books from database: " + err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{
+		"books": books,
+	})
+}
+
+func (app *application) IsAuthenticated(c *gin.Context) {
+	return
+}
+
 func (app *application) Edit(c *gin.Context)    {}
 func (app *application) Details(c *gin.Context) {}
 func (app *application) Remove(c *gin.Context)  {}
