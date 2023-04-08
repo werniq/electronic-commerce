@@ -80,7 +80,7 @@ func (m *DatabaseModel) InsertBook(b *Book) error {
 		return err
 	}
 
-	author, err := m.FoundAuthor(b.Author.Firstname, b.Author.Lastname)
+	author, err := m.FoundAuthor(b.AuthorID)
 	if err != nil {
 		return err
 	}
@@ -94,17 +94,15 @@ func (m *DatabaseModel) InsertBook(b *Book) error {
 }
 
 // FoundAuthor seeks for author by firstname and lastname
-func (m *DatabaseModel) FoundAuthor(firstname, lastname string) (*Author, error) {
+func (m *DatabaseModel) FoundAuthor(authorID int) (*Author, error) {
 	stmt := `
 			SELECT 
 			    * 
 			FROM author
 				WHERE 
-				    firstname = $1 
-				  AND 
-				    lastname = $2
+				    author_id = $1 
 			`
-	rows, err := m.DB.Query(stmt, firstname, lastname)
+	rows, err := m.DB.Query(stmt, authorID)
 	if err != nil {
 		return nil, err
 	}
@@ -191,11 +189,10 @@ func (m *DatabaseModel) GetAllBooks() ([]*Book, error) {
 			&book.Title,
 			&book.Description,
 			&book.Price,
-			&book.Author,
+			&book.AuthorID,
 			&book.QuoteFrom,
 			&book.DateOfIssue,
 			&book.Language,
-			&book.Review,
 		)
 		if err != nil {
 			return nil, err
@@ -203,4 +200,45 @@ func (m *DatabaseModel) GetAllBooks() ([]*Book, error) {
 		books = append(books, book)
 	}
 	return books, nil
+}
+
+func (m *DatabaseModel) FindAuthorByName(firstname, lastname string) (*Author, error) {
+	stmt := `
+			select 
+			    * 
+			from author 
+				where 
+				    firstname = $1 
+				  and 
+				    lastname = $2`
+
+	row, err := m.DB.Query(stmt, firstname, lastname)
+	if err != nil {
+		return nil, err
+	}
+	/*
+			ID          int       `json:"id"`
+		AuthorID    int       `json:"author_id"`
+		Firstname   string    `json:"firstname"`
+		Lastname    string    `json:"lastname"`
+		Biography   string    `json:"biography"`
+		DateOfBirth time.Time `json:"date_of_birth"`
+		Books       string    `json:"book"`
+	*/
+	a := &Author{}
+	if row.Next() {
+		err = row.Scan(
+			&a.ID,
+			&a.AuthorID,
+			&a.Firstname,
+			&a.Lastname,
+			&a.Biography,
+			&a.DateOfBirth,
+			&a.Books,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return a, nil
 }

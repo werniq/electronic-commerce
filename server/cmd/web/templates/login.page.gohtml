@@ -66,19 +66,24 @@
                     fetch("{{.API}}/api/signin", request)
                         .then(res => res.json())
                         .then(data => {
-                            if (data.error == true) {
-                                console.error(data.error)
+                            if (data.error) {
+                                alert(data.error)
                             } else {
                                 let token = data.token
                                 let tokenExpiry = data.tokenExpiry
-                                console.log(data.token)
-                                console.log(data.tokenExpiry)
+                                let email = data.email
+                                console.log(token)
+                                console.log(tokenExpiry)
+                                console.log(email)
                                 localStorage.setItem("token", token)
+                                localStorage.setItem("email", email)
                                 localStorage.setItem("tokenExpiry", tokenExpiry)
+                                sendUserData()
                                 alert("successfully authenticated!")
                                 location.href="/"
                             }
                         })
+
                     }
             </script>
         {{end}}

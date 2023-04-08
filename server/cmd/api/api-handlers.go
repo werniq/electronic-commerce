@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"new-e-commerce/models"
@@ -89,10 +90,31 @@ func (app *application) GenerateToken(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "error generating token for user: " + user.Email + " " + err.Error()})
 		return
 	}
+	//var payload struct {
+	//	Email       string    `json:"email"`
+	//	Token       string    `json:"token"`
+	//	TokenExpiry time.Time `json:"tokenExpiry"`
+	//}
+	//
+	//payload.Email = t.Email
+	//payload.Token = t.Token
+	//payload.TokenExpiry = t.ExpiresAt
+	//
+	//body, err := json.Marshal(payload)
+	//if err != nil {
+	//	c.JSON(400, gin.H{"error": err.Error()})
+	//	return
+	//}
+	//_, err = http.Post("http://localhost:4000/get-user-info", "application/json", bytes.NewBuffer(body))
+	//if err != nil {
+	//	c.JSON(400, gin.H{"error": err.Error()})
+	//	return
+	//}
 
 	c.JSON(200, gin.H{
 		"error":       false,
 		"token":       t.Token,
+		"email":       t.Email,
 		"tokenExpiry": t.ExpiresAt,
 	})
 }
@@ -110,15 +132,17 @@ func (app *application) Create(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "wrong author name"})
 		return
 	}
+	aut, err := app.database.FindAuthorByName(author[0], author[1])
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
 
 	modelBook := &models.Book{
 		Title:       book.Title,
 		Description: book.Description,
 		Price:       int(book.Price),
-		Author: &models.Author{
-			Firstname: author[0],
-			Lastname:  author[1],
-		},
+		AuthorID:    aut.AuthorID,
 		DateOfIssue: book.DateOfIssue,
 		QuoteFrom:   book.QuoteFrom,
 		Language:    book.Language,
@@ -129,11 +153,21 @@ func (app *application) Create(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "error inserting book: " + err.Error()})
 		return
 	}
+
+	err = app.database.UpdateAuthorBook(aut, book.Title)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(200, gin.H{"msg": "book soon will appear in catalogue :)"})
 }
 
 func (app *application) Catalogue(c *gin.Context) {
 	books, err := app.database.GetAllBooks()
+	fmt.Println(books)
+	fmt.Println(books)
+	fmt.Println(books)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "error getting all books from database: " + err.Error()})
 		return

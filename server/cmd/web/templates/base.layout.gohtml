@@ -650,7 +650,7 @@
         let regLink = document.getElementById("register-link")
 
         document.addEventListener("DOMContentLoaded", function() {
-            if (localStorage.getItem("token") !== null) {
+            if (localStorage.getItem("token") !== 'undefined') {
                 loginLink.classList.add("d-none")
                 logoutLink.classList.remove("d-none")
             } else {
@@ -666,7 +666,7 @@
         }
 
         function checkAuth() {
-            if (localStorage.getItem("token") === null) {
+            if (localStorage.getItem("token") == 'undefined') {
                 location.href = "/login";
                 return;
             } else {
@@ -674,6 +674,7 @@
                 let myHeaders = new Headers();
                 myHeaders.append("Authorization", "Bearer " + token);
                 myHeaders.append("Content-Type", "application/json");
+                myHeaders.append("Accept", "application/json")
 
                 const requestOptions = {
                     method: "POST",
@@ -683,7 +684,7 @@
                 fetch("{{.API}}/api/is-authenticated", requestOptions)
                     .then(response => response.json())
                     .then(function(data){
-                        if (data.error === true) {
+                        if (data.error) {
                             alert("not logged in");
                             location.href = "/login";
                         } else {
@@ -691,26 +692,29 @@
                             localStorage.setItem("tokenExpiry", data.tokenExpiry)
                             localStorage.setItem("email", data.email)
                             alert("logged in");
-                        }
-                })
-
-                let userData = {
-                    "email": data.email,
-                    "token": data.token,
-                    "tokenExpiry": data.tokenExpiry
-                }
-
-                const secondRequestOptions = {
-                    method: "POST",
-                    headers: myHeaders,
-                    body: JSON.stringify(userData)
-                }
-
-                fetch("http://localhost:4000/get-user-info", secondRequestOptions)
-                    .then(response => response.json())
-                    .then(data => console.log(data))
-                    .catch(error => console.error(error));
+                        }})}
+                    }
+        function sendUserData() {
+            let userData = {
+                "email": localStorage.getItem("email"),
+                "token": localStorage.getItem("token"),
+                "tokenExpiry": localStorage.getItem("tokenExpiry")
             }
+
+            let myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            myHeaders.append("Accept", "application/json")
+
+            const secondRequestOptions = {
+                method: 'post',
+                headers: myHeaders,
+                body: JSON.stringify(userData)
+            }
+
+            fetch("http://localhost:4000/get-user-info", secondRequestOptions)
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error(error));
         }
 
     </script>

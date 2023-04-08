@@ -37,6 +37,7 @@ type application struct {
 	templateCache map[string]*template.Template
 	database      models.DatabaseModel
 	Session       *scs.SessionManager
+	data          map[string]map[string]interface{}
 }
 
 func main() {
@@ -65,6 +66,8 @@ func main() {
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
 
+	data := make(map[string]map[string]interface{})
+
 	app := &application{
 		cfg:           cfg,
 		infoLog:       infoLog,
@@ -72,6 +75,7 @@ func main() {
 		templateCache: tc,
 		database:      models.DatabaseModel{DB: conn},
 		Session:       session,
+		data:          data,
 	}
 
 	router := gin.Default()

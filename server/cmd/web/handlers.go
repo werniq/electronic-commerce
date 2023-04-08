@@ -1,12 +1,22 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"new-e-commerce/models"
+	"time"
 )
+
+var (
+	sessionTokenKey = "t:#f#YY_G(TA{Zp!&a^5YHNBK%f4C$c$M("
+)
+
+type SessionData struct {
+	Email       string `json:"email"`
+	Token       string `json:"token"`
+	TokenExpiry string `json:"tokenExpiry"`
+}
 
 // HomeHandler renders home page
 func (app *application) HomeHandler(c *gin.Context) {
@@ -29,29 +39,40 @@ func (app *application) AuthenticationHandler(c *gin.Context) {
 	}
 }
 
+// Login function is rendering Login page
 func (app *application) Login(c *gin.Context) {
 	if err := app.renderTemplate(c, "login", &templateData{}); err != nil {
 		app.errorLog.Printf("error rendering login page: %v\n", err)
 	}
 }
 
+// CreateProduct function is rendering CreateProduct page
 func (app *application) CreateProduct(c *gin.Context) {
 	if err := app.renderTemplate(c, "createProduct", &templateData{}); err != nil {
 		app.errorLog.Printf("error rendering createProduct page: %v\n", err)
 	}
 }
 
+// Catalogue creates request to API, retrieves all books from database, and renders page with data from API response
 func (app *application) Catalogue(c *gin.Context) {
 	req, err := http.NewRequest("POST", app.cfg.api+"/api/catalogue", nil)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
-	token := app.Session.Get(context.Background(), "token")
-
+	email, err := c.Cookie("email")
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	token, _, err := app.database.RetrieveTokenDataFromTable(email)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	req.Header.Add("Authorization", "Bearer "+token)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", token.(string))
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -59,7 +80,7 @@ func (app *application) Catalogue(c *gin.Context) {
 		return
 	}
 
-	var books []*models.Book
+	var books []models.Book
 	err = json.NewDecoder(res.Body).Decode(&books)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -81,20 +102,28 @@ func (app *application) Catalogue(c *gin.Context) {
 }
 
 func (app *application) GetUserInfo(c *gin.Context) {
-	var payload struct {
-		Email       string `json:"email"`
-		Token       string `json:"token"`
-		TokenExpiry string `json:"tokenExpiry"`
-	}
+	sessionData := &SessionData{}
 
-	err := json.NewDecoder(c.Request.Body).Decode(&payload)
+	err := json.NewDecoder(c.Request.Body).Decode(&sessionData)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
-	app.Session.Put(context.Background(), "email", payload.Email)
-	app.Session.Put(context.Background(), "token", payload.Token)
-	app.Session.Put(context.Background(), "tokenExpiry", payload.TokenExpiry)
+
+	c.SetCookie("email", sessionData.Email, 3600*24*7, "/", "localhost", false, true)
+	sessionData.TokenExpiry = sessionData.TokenExpiry[:10]
+	tokenExp, err := time.Parse("2006-01-02", sessionData.TokenExpiry)
+
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	err = app.database.StoreEmailAsSessionToken(sessionData.Email, sessionData.Token, tokenExp)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
 }
 
 func (app *application) MyProfile(c *gin.Context)      {}
