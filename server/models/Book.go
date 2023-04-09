@@ -1,18 +1,20 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Book struct {
 	ID          int       `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Price       int       `json:"price"`
-	AuthorID    int       `json:"author_id"`
 	DateOfIssue time.Time `json:"date_of_issue"`
 	QuoteFrom   string    `json:"quote_from"`
+	Language    string    `json:"language"`
 	Category    string    `json:"category"`
 	AddCategory string    `json:"addcategory"`
-	Language    string    `json:"language"`
+	AuthorID    int       `json:"author_id"`
 }
 
 type Review struct {

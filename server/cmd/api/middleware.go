@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"new-e-commerce/models"
@@ -36,12 +37,14 @@ func (app *application) Auth() gin.HandlerFunc {
 		if token == "" {
 			c.JSON(401, gin.H{"error": "no authentication header received"})
 			c.Abort()
+			fmt.Println("adasfads")
 			return
 		}
 
 		err := models.ValidateToken(token)
 		if err != nil {
 			c.JSON(401, gin.H{"error": err.Error()})
+			fmt.Println("adasfads")
 			c.Abort()
 			return
 		}

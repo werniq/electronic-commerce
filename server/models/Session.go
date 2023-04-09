@@ -46,13 +46,13 @@ func (m *DatabaseModel) StoreEmailAsSessionToken(email, token string, tokenExpir
 
 // RetrieveTokenDataFromTable receives data from table Email, and returns token and token Expiry
 // if any errors occurs, returns empty string, null time and error
-func (m *DatabaseModel) RetrieveTokenDataFromTable(email string) (string, time.Time, error) {
+func (m *DatabaseModel) RetrieveTokenDataFromTable(email string) (*SesionData, error) {
 	email = strings.ReplaceAll(email, "@", "")
 	email = strings.ReplaceAll(email, ".", "")
 	stmt := fmt.Sprintf("SELECT * FROM %s", email)
 	row, err := m.DB.Query(stmt)
 	if err != nil {
-		return "", time.Time{}, err
+		return nil, err
 	}
 	sessionData := &SesionData{
 		Email: email,
@@ -66,7 +66,7 @@ func (m *DatabaseModel) RetrieveTokenDataFromTable(email string) (string, time.T
 	}
 
 	if err != nil {
-		return "", time.Time{}, err
+		return nil, err
 	}
-	return sessionData.Token, sessionData.TokenExpiry, nil
+	return sessionData, nil
 }

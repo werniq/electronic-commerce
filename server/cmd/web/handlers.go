@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"new-e-commerce/models"
@@ -12,10 +13,30 @@ var (
 	sessionTokenKey = "t:#f#YY_G(TA{Zp!&a^5YHNBK%f4C$c$M("
 )
 
+type Book struct {
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       int       `json:"price"`
+	DateOfIssue time.Time `json:"date_of_issue"`
+	QuoteFrom   string    `json:"quote_from"`
+	Language    string    `json:"language"`
+	Category    string    `json:"category"`
+	AddCategory string    `json:"addcategory"`
+	AuthorID    int       `json:"author_id"`
+}
+
 type SessionData struct {
 	Email       string `json:"email"`
 	Token       string `json:"token"`
 	TokenExpiry string `json:"tokenExpiry"`
+}
+
+type PaginationData struct {
+	CurrentPage int `json:"currentPage"`
+	PageSize    int `json:"pageSize"`
+	TotalPages  int `json:"totalPages"`
+	TotalCount  int `json:"totalCount"`
 }
 
 // HomeHandler renders home page
@@ -55,6 +76,24 @@ func (app *application) CreateProduct(c *gin.Context) {
 
 // Catalogue creates request to API, retrieves all books from database, and renders page with data from API response
 func (app *application) Catalogue(c *gin.Context) {
+	//page := c.Query("page")
+	//p, err := strconv.Atoi(page)
+	//if err != nil {
+	//	app.errorLog.Println(err)
+	//	return
+	//}
+
+	//var requestBody struct {
+	//	Page int `json:"page"`
+	//}
+	//
+	//requestBody.Page = p
+	//body, err := json.Marshal(requestBody)
+	//if err != nil {
+	//	app.errorLog.Println(err)
+	//	return
+	//}
+
 	req, err := http.NewRequest("POST", app.cfg.api+"/api/catalogue", nil)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -65,12 +104,12 @@ func (app *application) Catalogue(c *gin.Context) {
 		app.errorLog.Println(err)
 		return
 	}
-	token, _, err := app.database.RetrieveTokenDataFromTable(email)
+	_, err = app.database.RetrieveTokenDataFromTable(email)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
-	req.Header.Add("Authorization", "Bearer "+token)
+	//req.Header.Add("Authorization", "Bearer "+sessionData.Token)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
@@ -80,15 +119,18 @@ func (app *application) Catalogue(c *gin.Context) {
 		return
 	}
 
-	var books []models.Book
+	var books struct {
+		Books []models.Book `json:"books"`
+	}
 	err = json.NewDecoder(res.Body).Decode(&books)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
+	fmt.Println(books)
 
 	data := make(map[string]interface{})
-	data["books"] = books
+	data["books"] = books.Books
 	if err := app.renderTemplate(
 		c,
 		"catalogue",
@@ -101,6 +143,7 @@ func (app *application) Catalogue(c *gin.Context) {
 
 }
 
+// GetUserInfo stores data in database with name of user's email, so that I can receive token and tokenExpiry for my own purposes :D
 func (app *application) GetUserInfo(c *gin.Context) {
 	sessionData := &SessionData{}
 

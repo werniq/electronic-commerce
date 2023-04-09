@@ -3,12 +3,27 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 type DatabaseModel struct {
 	DB *sql.DB
+}
+
+type DbBook struct {
+	ID          int            `json:"id"`
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Price       int            `json:"price"`
+	DateOfIssue time.Time      `json:"date_of_issue"`
+	QuoteFrom   sql.NullString `json:"quote_from"`
+	Language    sql.NullString `json:"language"`
+	Category    sql.NullString `json:"category"`
+	AddCategory sql.NullString `json:"addcategory"`
+	AuthorID    int            `json:"author_id"`
 }
 
 var errorLogger = log.New(os.Stdout, "ERROR\t", log.Lshortfile|log.Ltime|log.Lshortfile)
@@ -169,39 +184,76 @@ func (m *DatabaseModel) UpdateAuthorBook(aut *Author, book string) error {
 	return nil
 }
 
-// GetAllBooks retrieves all existing in database books
-func (m *DatabaseModel) GetAllBooks() ([]*Book, error) {
+func (m *DatabaseModel) GetAllBooks() ([]Book, error) {
 	stmt := `
-			SELECT * FROM book
-		`
+			SELECT
+			    id, title, description,
+			    price, date_of_issue, quote_from,
+			    language, category, addcategory, author_id
+			FROM book;
+			`
 
+	var books []Book
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
-	var books []*Book
-
 	for rows.Next() {
-		book := &Book{}
+		book := DbBook{}
 		err = rows.Scan(
 			&book.ID,
 			&book.Title,
 			&book.Description,
 			&book.Price,
-			&book.AuthorID,
-			&book.QuoteFrom,
 			&book.DateOfIssue,
+			&book.QuoteFrom,
 			&book.Language,
+			&book.Category,
+			&book.AddCategory,
+			&book.AuthorID,
 		)
+
+		modelBook := Book{
+			ID:          book.ID,
+			Title:       book.Title,
+			Description: book.Description,
+			Price:       book.Price,
+			DateOfIssue: book.DateOfIssue,
+			QuoteFrom:   "",
+			Language:    "",
+			Category:    "",
+			AddCategory: "",
+			AuthorID:    book.AuthorID,
+		}
+
+		if book.QuoteFrom.Valid {
+			modelBook.QuoteFrom = book.QuoteFrom.String
+		}
+
+		if book.Language.Valid {
+			modelBook.Language = book.Language.String
+		}
+
+		if book.Category.Valid {
+			modelBook.Category = book.Category.String
+		}
+
+		if book.AddCategory.Valid {
+			modelBook.AddCategory = book.AddCategory.String
+		}
+
 		if err != nil {
 			return nil, err
 		}
-		books = append(books, book)
+		books = append(books, modelBook)
 	}
 	return books, nil
 }
 
+// FindAuthorByName searches for author by given first and lastname. In case err == sql.ErrNoRows (author does not exist
+// in database), creates new author record
 func (m *DatabaseModel) FindAuthorByName(firstname, lastname string) (*Author, error) {
 	stmt := `
 			select 
@@ -213,7 +265,7 @@ func (m *DatabaseModel) FindAuthorByName(firstname, lastname string) (*Author, e
 				    lastname = $2`
 
 	row, err := m.DB.Query(stmt, firstname, lastname)
-	if err != nil {
+	if err != sql.ErrNoRows {
 		return nil, err
 	}
 	/*
@@ -241,4 +293,77 @@ func (m *DatabaseModel) FindAuthorByName(firstname, lastname string) (*Author, e
 		}
 	}
 	return a, nil
+}
+
+// CreateNewAuthor func creates new author record in database
+func (m *DatabaseModel) CreateNewAuthor(a *Author) error {
+	stmt := `
+		INSERT INTO 
+		    author
+		    (firstname, lastname, biography	, date_of_birth, books, author_id) 
+		VALUES
+		    ($1, $2, $3, $4, $5, $6)`
+
+	_, err := m.DB.Exec(stmt, a.Firstname, a.Lastname, a.Biography, a.DateOfBirth, a.Books, a.AuthorID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetPaginatedBooks is used for returning books in paginated form
+func (m *DatabaseModel) GetPaginatedBooks(page int) ([]Book, error) {
+	offset := page * 4
+	//var book DbBook
+	stmt := `
+			SELECT id, title, description, price, to_char(date_of_issue, 'YYYY-MM-DD'), quote_from, category, addcategory, author_id, language
+			FROM book
+			LIMIT $1 OFFSET $2;
+		`
+
+	var books []Book
+	rows, err := m.DB.Query(stmt, 4, offset)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	for rows.Next() {
+		book := Book{}
+		err = rows.Scan(
+			&book.ID,
+			&book.Title,
+			&book.Description,
+			&book.Price,
+			&book.DateOfIssue,
+			&book.QuoteFrom,
+			&book.Category,
+			&book.AddCategory,
+			&book.AuthorID,
+			&book.Language,
+		)
+		time, err := time.Parse("2006-06-06", book.DateOfIssue.Format("2006-06-06"))
+		if err != nil {
+			fmt.Printf("error parsing time: %v", err)
+			return nil, err
+		}
+		modelBook := Book{
+			ID:          book.ID,
+			Title:       book.Title,
+			Description: book.Description,
+			Price:       book.Price,
+			DateOfIssue: time,
+			QuoteFrom:   book.QuoteFrom,
+			Language:    book.Language,
+			Category:    book.Category,
+			AddCategory: book.AddCategory,
+			AuthorID:    book.AuthorID,
+		}
+		if err != nil {
+			return nil, err
+		}
+		books = append(books, modelBook)
+	}
+	return books, nil
 }

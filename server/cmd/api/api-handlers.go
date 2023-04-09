@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"new-e-commerce/models"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -145,6 +145,8 @@ func (app *application) Create(c *gin.Context) {
 		AuthorID:    aut.AuthorID,
 		DateOfIssue: book.DateOfIssue,
 		QuoteFrom:   book.QuoteFrom,
+		Category:    book.Category,
+		AddCategory: book.AddCategory,
 		Language:    book.Language,
 	}
 
@@ -165,11 +167,30 @@ func (app *application) Create(c *gin.Context) {
 
 func (app *application) Catalogue(c *gin.Context) {
 	books, err := app.database.GetAllBooks()
-	fmt.Println(books)
-	fmt.Println(books)
-	fmt.Println(books)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "error getting all books from database: " + err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+	c.JSON(200, gin.H{
+		"books": books,
+	})
+}
+
+// GetPaginatedCatalogue is used for showing exactly 4 books at client catalogue
+func (app *application) GetPaginatedCatalogue(c *gin.Context) {
+	page := c.Request.URL.Query().Get("page")
+	p, err := strconv.Atoi(page)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	books, err := app.database.GetPaginatedBooks(p)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
 		return
 	}
 	c.JSON(200, gin.H{
