@@ -33,8 +33,12 @@
                 background-color: #0d1d31;
             }
 
+            .card-title {
+                font-size: 16px;
+            }
+
             h2 {
-                font-size: 36px; /* adjust to your preference */
+                font-size: 30px; /* adjust to your preference */
                 font-weight: bold;
                 color: transparent;
                 text-transform: uppercase; /* adjust to your preference */
@@ -45,6 +49,11 @@
                 background: conic-gradient(#553c9a 30%, #ee4b2b 40%, #ee4b2b 70%, #00c2cb 80%, #553c9a);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
+                transition: all .9s ease-in-out;
+            }
+
+            h2:hover {
+                font-size: 26px;
             }
 
             p {
@@ -54,7 +63,7 @@
 
             .pagination {
                 color: white;
-                background-color: #062650;
+                background-color: #031123;
             }
 
         </style>
@@ -68,13 +77,11 @@
     {{define "content"}}
         <div class="cards">
             {{range $i, $book := index .Data "books" }}
-                {{ if gt $i 3 }}
-                    {{break}}
-                {{end}}
+
                 <div class="card" style="max-width: 30rem; margin-left: 325px; margin-top: 5px; max-height: 400px;">
                     <div class="card-body">
                         <h2 class="card-title"> {{$book.Title}}         </h2>
-                        <p class="card-text">   {{$book.Description}}   </p>
+                        <p class="card-text">   {{$book.Description}}    </p>
                         <h3 class="card-title"> Price: ${{$book.Price}}         </h3>
                         <h4 class="card-title"> {{$book.QuoteFrom}}     </h4>
                         <h4 class="card-title"> Language: {{$book.Language}}      </h4>
@@ -84,37 +91,30 @@
                         <a href="/order/{{$book.ID}}" class="btn btn-primary">Order book</a>
                     </div>
                 </div>
-                {{ if eq $i 3 }}
-                    <nav style="margin-top: 300px; margin-left: -750px" aria-label="...">
-                        <ul class="pagination">
-                            <li class="page-item">
-                                <a class="page-link" href="#"><img src="https://cdn-icons-png.flaticon.com/512/507/507257.png" width="16" height="16" /></a>
-                                <span onclick="" class="sr-only">(current)</span>
-                            </li><li class="page-item">
-                                <a class="page-link" href="#">1</a>
-                                <span onclick="" class="sr-only">(current)</span>
-                            </li><li class="page-item"></li><li class="page-item">
-                                <a class="page-link" href="#">2</a>
-                                <span onclick="" class="sr-only">(current)</span>
-                            </li><li class="page-item"></li><li class="page-item">
-                                <a class="page-link" href="#">3</a>
-                                <span onclick="" class="sr-only">(current)</span>
-                            </li><li class="page-item">
-                                <a class="page-link" href="#"><img src="https://cdn-icons-png.flaticon.com/512/507/507258.png" height="16" width="16" /></a>
-                                <span onclick="" class="sr-only">(current)</span>
-                            </li>
-                        </ul>
-                    </nav>
-                {{end}}
             {{end}}
 
+                <nav style="margin-top: 300px; margin-left: -750px" aria-label="...">
+                    <ul class="pagination">
+                        <li class="page-item">
+                            <a class="page-link" href="/catalogue/0"><img src="https://cdn-icons-png.flaticon.com/512/507/507257.png" width="16" height="16" /></a>
+                            <span onclick="" class="sr-only">(current)</span>
+                        </li>
+                        {{ range $ind := index .Data "pages" }}
+                        <li class="page-item">
+                            <a class="page-link" href="/catalogue/{{$ind}}">{{$ind}}</a>
+                            <span onclick="" class="sr-only">(current)</span>
+                        </li>
+                        {{end}}
+                        <li class="page-item">
+                            <a class="page-link" href="/catalogue/{{index .Data "max" }}"><img src="https://cdn-icons-png.flaticon.com/512/507/507258.png" height="16" width="16" /></a>
+
+                            <span onclick="" class="sr-only">(current)</span>
+                        </li>
+
+                    </ul>
+                    </nav>
         </div>
-
-
-
     {{end}}
-
-
 
     {{define "js"}}
         <script>

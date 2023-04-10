@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"new-e-commerce/models"
+	"strconv"
 	"time"
 )
 
@@ -76,29 +77,26 @@ func (app *application) CreateProduct(c *gin.Context) {
 
 // Catalogue creates request to API, retrieves all books from database, and renders page with data from API response
 func (app *application) Catalogue(c *gin.Context) {
-	//page := c.Query("page")
-	//p, err := strconv.Atoi(page)
-	//if err != nil {
-	//	app.errorLog.Println(err)
-	//	return
-	//}
+	page := c.Param("page")
+	var p int
+	var err error
+	if page == "" {
+		p = 0
+	}
 
-	//var requestBody struct {
-	//	Page int `json:"page"`
-	//}
-	//
-	//requestBody.Page = p
-	//body, err := json.Marshal(requestBody)
-	//if err != nil {
-	//	app.errorLog.Println(err)
-	//	return
-	//}
-
-	req, err := http.NewRequest("POST", app.cfg.api+"/api/catalogue", nil)
+	p, err = strconv.Atoi(page)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
+
+	uri := fmt.Sprintf(app.cfg.api+"/api/catalogue/page/%d", p)
+	req, err := http.NewRequest("POST", uri, nil)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
 	email, err := c.Cookie("email")
 	if err != nil {
 		app.errorLog.Println(err)
@@ -122,15 +120,31 @@ func (app *application) Catalogue(c *gin.Context) {
 	var books struct {
 		Books []models.Book `json:"books"`
 	}
+
 	err = json.NewDecoder(res.Body).Decode(&books)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
-	fmt.Println(books)
+
+	b, err := app.database.GetAllBooks()
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	pages := int(len(b) / 4)
+
+	var pg []int
+	for i := 1; i <= pages; i++ {
+		pg = append(pg, i)
+	}
 
 	data := make(map[string]interface{})
 	data["books"] = books.Books
+	data["pages"] = pg
+	data["max"] = pages
+
 	if err := app.renderTemplate(
 		c,
 		"catalogue",

@@ -166,7 +166,15 @@ func (app *application) Create(c *gin.Context) {
 }
 
 func (app *application) Catalogue(c *gin.Context) {
-	books, err := app.database.GetAllBooks()
+	p := c.Param("page")
+	page, err := strconv.Atoi(p)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	books, err := app.database.GetPaginatedBooks(page)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "error getting all books from database: " + err.Error()})
 		app.errorLog.Println(err)

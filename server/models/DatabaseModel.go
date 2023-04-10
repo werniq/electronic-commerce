@@ -316,11 +316,15 @@ func (m *DatabaseModel) CreateNewAuthor(a *Author) error {
 func (m *DatabaseModel) GetPaginatedBooks(page int) ([]Book, error) {
 	offset := page * 4
 	//var book DbBook
+
 	stmt := `
-			SELECT id, title, description, price, to_char(date_of_issue, 'YYYY-MM-DD'), quote_from, category, addcategory, author_id, language
+			SELECT
+			    id, title, description,
+			    price, date_of_issue, quote_from,
+			    language, category, addcategory, author_id
 			FROM book
-			LIMIT $1 OFFSET $2;
-		`
+			    LIMIT $1 OFFSET $2;
+			`
 
 	var books []Book
 	rows, err := m.DB.Query(stmt, 4, offset)
@@ -330,7 +334,7 @@ func (m *DatabaseModel) GetPaginatedBooks(page int) ([]Book, error) {
 	}
 
 	for rows.Next() {
-		book := Book{}
+		book := DbBook{}
 		err = rows.Scan(
 			&book.ID,
 			&book.Title,
@@ -338,28 +342,41 @@ func (m *DatabaseModel) GetPaginatedBooks(page int) ([]Book, error) {
 			&book.Price,
 			&book.DateOfIssue,
 			&book.QuoteFrom,
+			&book.Language,
 			&book.Category,
 			&book.AddCategory,
 			&book.AuthorID,
-			&book.Language,
 		)
-		time, err := time.Parse("2006-06-06", book.DateOfIssue.Format("2006-06-06"))
-		if err != nil {
-			fmt.Printf("error parsing time: %v", err)
-			return nil, err
-		}
+
 		modelBook := Book{
 			ID:          book.ID,
 			Title:       book.Title,
 			Description: book.Description,
 			Price:       book.Price,
-			DateOfIssue: time,
-			QuoteFrom:   book.QuoteFrom,
-			Language:    book.Language,
-			Category:    book.Category,
-			AddCategory: book.AddCategory,
+			DateOfIssue: book.DateOfIssue,
+			QuoteFrom:   "",
+			Language:    "",
+			Category:    "",
+			AddCategory: "",
 			AuthorID:    book.AuthorID,
 		}
+
+		if book.QuoteFrom.Valid {
+			modelBook.QuoteFrom = book.QuoteFrom.String
+		}
+
+		if book.Language.Valid {
+			modelBook.Language = book.Language.String
+		}
+
+		if book.Category.Valid {
+			modelBook.Category = book.Category.String
+		}
+
+		if book.AddCategory.Valid {
+			modelBook.AddCategory = book.AddCategory.String
+		}
+
 		if err != nil {
 			return nil, err
 		}
