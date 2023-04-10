@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"html/template"
 	"log"
 	driver "new-e-commerce/drivers"
 	"new-e-commerce/models"
 	"os"
+	"strconv"
 )
 
 type config struct {
@@ -22,6 +24,12 @@ type config struct {
 	stripe struct {
 		secret string
 		key    string
+	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
 	}
 }
 
@@ -39,6 +47,11 @@ type application struct {
 func main() {
 	gob.Register(models.User{})
 	var cfg config
+	var err error
+
+	if err = godotenv.Load(".env"); err != nil {
+		log.Fatal(err)
+	}
 
 	cfg.port = 4000
 	cfg.env = "development"
@@ -46,6 +59,14 @@ func main() {
 	cfg.db.dsn = "user=postgres dbname=e-commerce password=Matwyenko1_ host=localhost sslmode=disable binary_parameters=yes"
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
 	cfg.stripe.secret = os.Getenv("STRIPE_SECRET")
+
+	cfg.smtp.password = os.Getenv("SMTPPass")
+	cfg.smtp.username = os.Getenv("SMTPUser")
+	cfg.smtp.host = os.Getenv("SMTPHost")
+	cfg.smtp.port, err = strconv.Atoi(os.Getenv("SMTPPort"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)

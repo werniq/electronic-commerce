@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
 	"new-e-commerce/models"
 	"strconv"
 	"strings"
@@ -25,6 +26,10 @@ type Book struct {
 	DateOfIssue time.Time `json:"date_of_issue"`
 	QuoteFrom   string    `json:"quoteFrom"`
 	Language    string    `json:"language"`
+}
+
+type ResetPasswordData struct {
+	Email string `json:"email"`
 }
 
 // Authorize registers user in this website
@@ -208,6 +213,31 @@ func (app *application) GetPaginatedCatalogue(c *gin.Context) {
 
 func (app *application) IsAuthenticated(c *gin.Context) {
 	return
+}
+
+func (app *application) SendPasswordResetEmail(c *gin.Context) {
+	var data ResetPasswordData
+	if err := c.ShouldBindJSON(&data); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	var payload struct {
+		Link string
+	}
+
+	payload.Link = "http://www.unb.ca"
+
+	// send email
+	err := app.SendEmail("info@qniwwwersss.com", "info@qniwwwersss.com", "Password Reset Request", "password-reset", payload)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"msg": "Check your inbox!"})
 }
 
 func (app *application) Edit(c *gin.Context)    {}

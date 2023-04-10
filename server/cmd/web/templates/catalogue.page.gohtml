@@ -99,9 +99,9 @@
                             <a class="page-link" href="/catalogue/0"><img src="https://cdn-icons-png.flaticon.com/512/507/507257.png" width="16" height="16" /></a>
                             <span onclick="" class="sr-only">(current)</span>
                         </li>
-                        {{ range $ind := index .Data "pages" }}
+                        {{ range $ind, $val := index .Data "pages" }}
                         <li class="page-item">
-                            <a class="page-link" href="/catalogue/{{$ind}}">{{$ind}}</a>
+                            <a class="page-link" href="/catalogue/{{$val}}">{{$val}}</a>
                             <span onclick="" class="sr-only">(current)</span>
                         </li>
                         {{end}}

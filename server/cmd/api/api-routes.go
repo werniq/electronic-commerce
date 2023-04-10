@@ -10,6 +10,7 @@ func (app *application) SetupApiRoutes(router *gin.Engine) {
 	//router.Use(app.Auth())
 	router.POST("/api/is-authenticated", app.IsAuthenticated)
 	router.POST("/api/catalogue/page/:page", app.Catalogue)
+	router.POST("/api/forgot-password", app.SendPasswordResetEmail)
 	router.POST("/api/create", app.Create)
 	router.POST("/api/get/{id}", app.Details)
 	router.POST("/api/edit/{id}", app.Edit)

@@ -183,6 +183,13 @@ func (app *application) GetUserInfo(c *gin.Context) {
 	}
 }
 
+func (app *application) ForgotPassword(c *gin.Context) {
+	if err := app.renderTemplate(c, "forgot-password", &templateData{}); err != nil {
+		app.errorLog.Println(err)
+	}
+
+}
+
 func (app *application) MyProfile(c *gin.Context)      {}
 func (app *application) EditProduct(c *gin.Context)    {}
 func (app *application) DeleteProduct(c *gin.Context)  {}

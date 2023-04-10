@@ -14,7 +14,7 @@ func (app *application) SetupRoutes(r *gin.Engine) {
 	r.GET("/details/{id}", app.AuthenticationHandler)
 	r.GET("/charge-once", app.AuthenticationHandler)
 	r.GET("/reset-password", app.AuthenticationHandler)
-	r.GET("/forgot-password", app.AuthenticationHandler)
+	r.GET("/forgot-password", app.ForgotPassword)
 	r.GET("/contact", app.AuthenticationHandler)
 	r.POST("/get-user-info", app.GetUserInfo)
 }

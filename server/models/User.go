@@ -16,6 +16,15 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+type ForgotPasswordInput struct {
+	Email string `json:"email" binding:"required"`
+}
+
+type ResetPasswordInput struct {
+	Password        string `json:"password" binding="required"`
+	PasswordConfirm string `json:"password" binding="required"`
+}
+
 // CheckPassword compares user actual password, with one, from input
 func (u *User) CheckPassword(password string) (err error) {
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
