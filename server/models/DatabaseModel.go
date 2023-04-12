@@ -384,3 +384,73 @@ func (m *DatabaseModel) GetPaginatedBooks(page int) ([]Book, error) {
 	}
 	return books, nil
 }
+
+func (m *DatabaseModel) GetBookById(id int) (Book, error) {
+	var b Book
+	stmt := `
+		SELECT 
+		    id, title, description,
+			price, date_of_issue, quote_from,
+			language, category, addcategory, author_id
+		FROM book 
+			WHERE 
+			    id = $1
+		`
+	res, err := m.DB.Query(stmt, id)
+	if err != nil {
+		return b, err
+	}
+
+	book := &Book{}
+
+	for res.Next() {
+		book := DbBook{}
+		err = res.Scan(
+			&book.ID,
+			&book.Title,
+			&book.Description,
+			&book.Price,
+			&book.DateOfIssue,
+			&book.QuoteFrom,
+			&book.Language,
+			&book.Category,
+			&book.AddCategory,
+			&book.AuthorID,
+		)
+
+		modelBook := Book{
+			ID:          book.ID,
+			Title:       book.Title,
+			Description: book.Description,
+			Price:       book.Price,
+			DateOfIssue: book.DateOfIssue,
+			QuoteFrom:   "",
+			Language:    "",
+			Category:    "",
+			AddCategory: "",
+			AuthorID:    book.AuthorID,
+		}
+
+		if book.QuoteFrom.Valid {
+			modelBook.QuoteFrom = book.QuoteFrom.String
+		}
+
+		if book.Language.Valid {
+			modelBook.Language = book.Language.String
+		}
+
+		if book.Category.Valid {
+			modelBook.Category = book.Category.String
+		}
+
+		if book.AddCategory.Valid {
+			modelBook.AddCategory = book.AddCategory.String
+		}
+
+		if err == nil {
+			return modelBook, err
+		}
+	}
+	fmt.Println(book)
+	return b, nil
+}

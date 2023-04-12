@@ -28,6 +28,15 @@ type templateData struct {
 //go:embed templates
 var templateFS embed.FS
 
+var functions = template.FuncMap{
+	"formatCurrency": formatCurrency,
+}
+
+func formatCurrency(n int) string {
+	f := float32(n) / float32(100)
+	return fmt.Sprintf("$%.2f", f)
+}
+
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	td.API = app.cfg.api
 	td.StripeSecretKey = app.cfg.stripe.secret
@@ -71,7 +80,7 @@ func (app *application) parseTemplate(page, templateToRender string) (*template.
 	var t *template.Template
 	var err error
 
-	t, err = template.New(fmt.Sprintf("%s.page.gohtml", page)).ParseFS(templateFS, "templates/base.layout.gohtml", templateToRender)
+	t, err = template.New(fmt.Sprintf("%s.page.gohtml", page)).Funcs(functions).ParseFS(templateFS, "templates/base.layout.gohtml", templateToRender)
 
 	if err != nil {
 		app.errorLog.Println(err)

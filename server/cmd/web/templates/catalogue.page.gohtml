@@ -82,13 +82,13 @@
                     <div class="card-body">
                         <h2 class="card-title"> {{$book.Title}}         </h2>
                         <p class="card-text">   {{$book.Description}}    </p>
-                        <h3 class="card-title"> Price: ${{$book.Price}}         </h3>
+                        <h3 class="card-title"> {{formatCurrency $book.Price}}         </h3>
                         <h4 class="card-title"> {{$book.QuoteFrom}}     </h4>
                         <h4 class="card-title"> Language: {{$book.Language}}      </h4>
                         <h4 class="card-title"> Categories: {{$book.Category}} , {{$book.AddCategory}}  </h4>
                         <h5 class="card-title"> Issue date: {{$book.DateOfIssue}}   </h5>
 
-                        <a href="/order/{{$book.ID}}" class="btn btn-primary">Order book</a>
+                        <a href="/book/order/{{$book.ID}}" class="btn btn-primary">Order book</a>
                     </div>
                 </div>
             {{end}}

@@ -168,7 +168,11 @@ func (app *application) GetUserInfo(c *gin.Context) {
 	}
 
 	c.SetCookie("email", sessionData.Email, 3600*24*7, "/", "localhost", false, true)
-	sessionData.TokenExpiry = sessionData.TokenExpiry[:10]
+
+	if len(sessionData.TokenExpiry) != 0 {
+		sessionData.TokenExpiry = sessionData.TokenExpiry[:10]
+	}
+
 	tokenExp, err := time.Parse("2006-01-02", sessionData.TokenExpiry)
 
 	if err != nil {
@@ -185,6 +189,32 @@ func (app *application) GetUserInfo(c *gin.Context) {
 
 func (app *application) ForgotPassword(c *gin.Context) {
 	if err := app.renderTemplate(c, "forgot-password", &templateData{}); err != nil {
+		app.errorLog.Println(err)
+	}
+}
+
+func (app *application) OrderBook(c *gin.Context) {
+	id := c.Param("id")
+	bookID, err := strconv.Atoi(id)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+	book, err := app.database.GetBookById(bookID)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["book"] = book
+	if err := app.renderTemplate(
+		c,
+		"buy-book",
+		&templateData{
+			Data: data,
+		},
+	); err != nil {
 		app.errorLog.Println(err)
 	}
 

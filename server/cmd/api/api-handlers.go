@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"new-e-commerce/models"
+	"new-e-commerce/utils/cards"
+	"new-e-commerce/utils/urlsigner"
 	"strconv"
 	"strings"
 	"time"
@@ -26,6 +29,28 @@ type Book struct {
 	DateOfIssue time.Time `json:"date_of_issue"`
 	QuoteFrom   string    `json:"quoteFrom"`
 	Language    string    `json:"language"`
+}
+
+type StripePayload struct {
+	Currency      string `json:"currency"`
+	Amount        string `json:"amount"`
+	PaymentMethod string `json:"payment_method"`
+	Email         string `json:"email"`
+	CardBrand     string `json:"card_brand"`
+	ExpiryMonth   int    `json:"exp_month"`
+	ExpiryYear    int    `json:"exp_year"`
+	LastFour      string `json:"last_four"`
+	Plan          string `json:"plan"`
+	ProductID     string `json:"product_id"`
+	FirstName     string `json:"first_name"`
+	LastName      string `json:"last_name"`
+}
+
+type JsonResponse struct {
+	OK      bool   `json:"ok"`
+	Message string `json:"message,omitempty"`
+	Content string `json:"content,omitempty"`
+	ID      int    `json:"id,omitempty"`
 }
 
 type ResetPasswordData struct {
@@ -223,14 +248,27 @@ func (app *application) SendPasswordResetEmail(c *gin.Context) {
 		return
 	}
 
+	_, err := app.database.FindUserByEmail(data.Email)
+	if err != nil {
+		c.JSON(http.StatusAccepted, gin.H{"error": "user with given email not found"})
+		app.errorLog.Println(err)
+		return
+	}
+
+	link := fmt.Sprintf("%s/reset-password?email=%s", app.cfg.client, data.Email)
+
+	sign := urlsigner.Signer{Secret: []byte(app.cfg.secretKey)}
+
+	signedLink := sign.GenerateTokenFromString(link)
+
 	var payload struct {
 		Link string
 	}
 
-	payload.Link = "http://www.unb.ca"
+	payload.Link = signedLink
 
 	// send email
-	err := app.SendEmail("info@qniwwwersss.com", "info@qniwwwersss.com", "Password Reset Request", "password-reset", payload)
+	err = app.SendEmail("info@qniwwwersss.com", "info@qniwwwersss.com", "Password Reset Request", "password-reset", payload)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		app.errorLog.Println(err)
@@ -238,6 +276,66 @@ func (app *application) SendPasswordResetEmail(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"msg": "Check your inbox!"})
+}
+
+// func (app *application) OrderBook(c *gin.Context) {
+//	id := c.Param("id")
+//	bookID, err := strconv.Atoi(id)
+//	if err != nil {
+//		c.JSON(400, gin.H{"error": err.Error()})
+//		app.errorLog.Println(err)
+//		return
+//	}
+//
+//	book, err := app.database.GetBookById(bookID)
+//	if err != nil {
+//		c.JSON(500, gin.H{"error": fmt.Sprintf("error searching book : %v", err)})
+//		app.errorLog.Println(err)
+//		return
+//	}
+//
+//}
+
+func (app *application) GetPaymentIntent(c *gin.Context) {
+	var payload StripePayload
+	err := c.ShouldBindJSON(&payload)
+	if err != nil {
+		c.JSON(http.StatusAccepted, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+	amount, err := strconv.Atoi(payload.Amount)
+	amount = amount * 100
+	if err != nil {
+		c.JSON(500, gin.H{"error": "internal server error " + err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	card := cards.Card{
+		Secret:   app.cfg.stripe.secret,
+		Key:      app.cfg.stripe.key,
+		Currency: payload.Currency,
+	}
+
+	ok := true
+	paymentIntent, msg, err := card.Charge(payload.Currency, amount)
+	if err != nil {
+		ok = false
+	}
+
+	if ok {
+		c.JSON(200, gin.H{"data": paymentIntent})
+		return
+	} else {
+		j := JsonResponse{
+			OK:      false,
+			Message: msg,
+			Content: "",
+		}
+
+		c.JSON(400, gin.H{"error": j.Message})
+	}
 }
 
 func (app *application) Edit(c *gin.Context)    {}

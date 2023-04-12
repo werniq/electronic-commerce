@@ -1,0 +1,344 @@
+{{template "base" .}}
+
+{{define "style" }}
+    <style>
+        body {
+            display: flex;
+            justify-content: unset;
+            min-height: unset;
+            align-items: unset;
+            flex-wrap: wrap;
+            overflow: visible;
+            margin-top: 50px;
+        }
+
+        .cards {
+            margin-top: 50px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            margin-top: 50px;
+            flex: 1 0 21%;
+            display: inline-block;
+        }
+
+        .card-body {
+            transition: all .5s ease-in-out;
+        }
+
+        .card-body:hover {
+            padding: 15px;
+            background-color: #0d1d31;
+        }
+
+        .card-title {
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 30px; /* adjust to your preference */
+            font-weight: bold;
+            color: transparent;
+            text-transform: uppercase; /* adjust to your preference */
+            letter-spacing: 2px; /* adjust to your preference */
+            line-height: 1.2; /* adjust to your preference */
+            margin-top: 50px; /* adjust to your preference */
+            margin-bottom: 30px; /* adjust to your preference */
+            background: conic-gradient(#553c9a 30%, #ee4b2b 40%, #ee4b2b 70%, #00c2cb 80%, #553c9a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all .9s ease-in-out;
+        }
+
+        h2:hover {
+            font-size: 26px;
+        }
+
+        p {
+            color: teal;
+            font-weight: bold;
+        }
+
+        .pagination {
+            color: white;
+            background-color: #031123;
+        }
+
+        .card {
+            margin-top: 50px;
+            flex: 1 0 21%;
+            display: inline-block;
+        }
+
+        .card-body {
+            transition: all .5s ease-in-out;
+        }
+
+        .card-body:hover {
+            padding: 15px;
+            background-color: #0d1d31;
+        }
+
+        .card-title {
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 30px; /* adjust to your preference */
+            font-weight: bold;
+            color: transparent;
+            text-transform: uppercase; /* adjust to your preference */
+            letter-spacing: 2px; /* adjust to your preference */
+            line-height: 1.2; /* adjust to your preference */
+            margin-top: 50px; /* adjust to your preference */
+            margin-bottom: 30px; /* adjust to your preference */
+            background: conic-gradient(#553c9a 30%, #ee4b2b 40%, #ee4b2b 70%, #00c2cb 80%, #553c9a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all .9s ease-in-out;
+        }
+
+        h2:hover {
+            font-size: 26px;
+        }
+
+        p {
+            color: teal;
+            font-weight: bold;
+        }
+
+        .pagination {
+            color: white;
+            background-color: #031123;
+        }
+
+        h5 {
+            font-size: 20px;
+            color: floralwhite;
+        }
+
+        .error {
+            background-color: #9c2b2e;
+        }
+
+        .success {
+            background-color: #308300;
+        }
+
+    </style>
+{{end}}
+
+{{define "title"}}
+    Catalogue
+{{end}}
+
+
+{{define "content"}}
+        {{ $book := index .Data "book" }}
+        <form action="/payment-succeeded" method="post"
+              name="charge_form" id="charge_form"
+              class="d-block needs-validation charge-form"
+              autocomplete="off" novalidate="">
+
+            <div class="card" style="max-width: 30rem; margin-left: 650px; margin-top: 5px; max-height: 400px;">
+                <div class="card-body">
+                    <h2 class="card-title"> {{$book.Title}}         </h2>
+                    <p class="card-text">   {{$book.Description}}    </p>
+                    <h3 class="card-title"> {{formatCurrency $book.Price}}         </h3>
+                    <input type="hidden" value={{$book.Price}} id="book-price" />
+                    <h4 class="card-title"> {{$book.QuoteFrom}}     </h4>
+                    <h4 class="card-title"> Language: {{$book.Language}}      </h4>
+                    <h4 class="card-title"> Categories: {{$book.Category}} , {{$book.AddCategory}}  </h4>
+                    <h5 class="card-title"> Issue date: {{$book.DateOfIssue}}   </h5>
+                </div>
+            </div>
+
+            <div class="alert alert-danger text-center d-none" id="card-messages"
+                 style="width: 50%; margin: 10px auto; display: block;"></div>
+
+
+            <div class="mb-3">
+                <label style="color: whitesmoke;" for="last-name" class="form-label">Your full name</label>
+                <input type="text" placeholder="Your Lastname" class="form-control" id="cardholder-name" name="last_name"
+                       required="" autocomplete="last-name-new"
+                       style="width: 50%; margin: 0 auto; display: block;">
+
+            </div>
+
+
+            <div class="mb-3">
+                <label style="color: whitesmoke;" for="cardholder-email" class="form-label">Email</label>
+                <input type="email" placeholder="Your Email" class="form-control" id="cardholder-email" name="email"
+                       required="" autocomplete="cardholder-email-new"
+                       style="width: 50%; margin: 0 auto; display: block;">
+
+            </div>
+
+
+            <div class="mb-3">
+                <label style="color: whitesmoke;" for="cardholder-name" class="form-label">Name on Card</label>
+                <input type="text" placeholder="Name on your card" class="form-control" id="cardholder-name" name="cardholder_name"
+                       required="" autocomplete="cardholder-name-new"
+                       style="width: 50%; margin: 0 auto; display: block;">
+            </div>
+
+
+            <div class="mb-3">
+                <label for="card-element"  style="color: whitesmoke;" class="form-label">Credit Card</label>
+                <div style="width: 50%; margin: 0 auto; display: block;" id="card-element" placeholder="Credit Card" class="form-control"></div>
+                <div class="alert-danger text-center" id="card-errors" role="alert"></div>
+                <div class="alert-success text-center" id="card-success" role="alert"></div>
+            </div>
+
+            <a style="width: 50%; margin: 0 auto; display: block;" id="pay-button" href="javascript:void(0)" class="btn btn-primary" onclick="val()">Charge Card</a>
+            <div id="processing-payment" class="text-center d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+
+            <input type="hidden" name="payment_intent" id="payment_intent">
+            <input type="hidden" name="payment_method" id="payment_method">
+            <input type="hidden" name="payment_amount" id="payment_amount">
+            <input type="hidden" name="payment_currency" id="payment_currency">
+        </form>
+
+{{end}}
+
+{{define "js"}}
+        <script src="https://js.stripe.com/v3/"></script>
+
+        <script>
+            let card;
+
+            const cardMessages = document.getElementById("card-messages");
+            const payButton = document.getElementById("pay-button");
+            const processing = document.getElementById("processing-payment");
+
+            let stripe = Stripe({{.StripePublishableKey}});
+
+            function hidePayButton() {
+                payButton.classList.add("d-none");
+                processing.classList.remove("d-none");
+            }
+
+            function showPayButtons() {
+                payButton.classList.remove("d-none");
+                processing.classList.add("d-none");
+            }
+
+            function showCardError(msg) {
+                cardMessages.classList.add("alert-danger");
+                cardMessages.classList.remove("alert-success");
+                cardMessages.classList.remove("d-none");
+                cardMessages.classList.add("error")
+                cardMessages.innerText = msg;
+            }
+
+            function showCardSuccess() {
+                cardMessages.classList.remove("alert-danger");
+                cardMessages.classList.add("success")
+                cardMessages.classList.add("alert-success");
+                cardMessages.classList.remove("d-none");
+                cardMessages.innerText = "Transaction successful";
+            }
+
+            function val() {
+                let price = document.getElementById("book-price").value
+                console.log(price)
+
+                let payload = {
+                    "amount": price,
+                    "currency": 'cad',
+                }
+
+                const requestOptions = {
+                    method: 'post',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                }
+                {{ $book := index .Data "book" }}
+                fetch("{{.API}}/api/book/order/{{$book.ID}}", requestOptions)
+                    .then(res => res.json())
+                    .then(resp => {
+                        let data;
+                        try {
+                            data = JSON.parse(resp);
+                            stripe.confirmCardPayment(data.client_secret, {
+                                payment_method: {
+                                    card: card,
+                                    billing_details: {
+                                        name: document.getElementById("cardholder-name").value,
+                                    }
+                                }
+                            }).then(function(result) {
+                                if (result.error) {
+                                    showCardError(result.error)
+                                    showPayButtons()
+                                } else if (result.data) {
+                                    document.getElementById("payment_method").value = result.data.payment_method;
+                                    document.getElementById("payment_intent").value = result.data.id;
+                                    document.getElementById("payment_amount").value = result.data.amount;
+                                    document.getElementById("payment_currency").value = result.data.currency;
+                                    processing.classList.add("d-none");
+                                    showCardSuccess();
+                                    document.getElementById("charge_form").submit();
+                                }
+                            })
+                        } catch (err) {
+                            console.error(err)
+                            showCardError("Invalid response from payment gateway!")
+                            showPayButtons()
+                        }
+                    })
+            }
+
+            (function() {
+                // create stripe & elements
+                const elements = stripe.elements();
+                const style = {
+                    base: {
+                        fontSize: '16px',
+                        lineHeight: '24px'
+                    }
+                };
+
+                // create card entry
+                card = elements.create('card', {
+                    style: style,
+                    hidePostalCode: true,
+                });
+                card.mount("#card-element");
+
+                // check for input errors
+                card.addEventListener('change', function(event) {
+                    var displayError = document.getElementById("card-errors");
+                    if (event.error) {
+                        displayError.classList.remove('d-none');
+                        displayError.textContent = event.error.message;
+                    } else {
+                        displayError.classList.add('d-none');
+                        displayError.textContent = '';
+                    }
+                });
+            })();
+
+
+
+
+
+            function changeActiveState(id) {
+                let button = document.getElementById(id)
+                button.classList.remove("d-none")
+                button.classList.remove("hidden")
+            }
+
+
+    </script>
+{{end}}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"html/template"
 	"log"
 	driver "new-e-commerce/drivers"
@@ -47,6 +48,11 @@ func main() {
 	cfg.api = "http://localhost:4001"
 	cfg.port = 4000
 	cfg.env = "development"
+
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	cfg.db.dsn = "user=postgres dbname=e-commerce password=Matwyenko1_ host=localhost sslmode=disable binary_parameters=yes"
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")

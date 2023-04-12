@@ -31,6 +31,8 @@ type config struct {
 		username string
 		password string
 	}
+	secretKey string
+	client    string
 }
 
 var session *scs.SessionManager
@@ -64,6 +66,9 @@ func main() {
 	cfg.smtp.username = os.Getenv("SMTPUser")
 	cfg.smtp.host = os.Getenv("SMTPHost")
 	cfg.smtp.port, err = strconv.Atoi(os.Getenv("SMTPPort"))
+	cfg.secretKey = os.Getenv("SECRET_SIGNED_KEY")
+	cfg.client = "http://localhost:4000"
+
 	if err != nil {
 		log.Fatal(err)
 	}
