@@ -312,6 +312,25 @@ func (app *application) GetPaymentIntent(c *gin.Context) {
 		return
 	}
 
+	id := c.Param("id")
+	bookID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	_, err = app.database.GetBookById(bookID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	//if book.Price != amount {
+	//
+	//}
+
 	card := cards.Card{
 		Secret:   app.cfg.stripe.secret,
 		Key:      app.cfg.stripe.key,

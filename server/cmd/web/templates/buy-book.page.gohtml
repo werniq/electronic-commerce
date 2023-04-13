@@ -268,9 +268,9 @@
                     .then(res => res.json())
                     .then(resp => {
                         let data;
+                        console.log(resp)
                         try {
-                            data = JSON.parse(resp);
-                            stripe.confirmCardPayment(data.client_secret, {
+                            stripe.confirmCardPayment(resp.client_secret, {
                                 payment_method: {
                                     card: card,
                                     billing_details: {
