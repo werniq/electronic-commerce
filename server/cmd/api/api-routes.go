@@ -13,10 +13,9 @@ func (app *application) SetupApiRoutes(router *gin.Engine) {
 	router.POST("/api/forgot-password", app.SendPasswordResetEmail)
 	router.POST("/api/create", app.Create)
 
-	router.POST("/api/books/view/:id}", app.Details)
-	//router.POST("/api/books/buy/:id", app.OrderBook)
-	//router.POST("/api/books/delete/:id", app.OrderBook)
-	//router.POST("/api/books/edit/:id", app.OrderBook)
+	router.POST("/api/books/buy/:id", app.GetPaymentIntent)
+	router.POST("/api/books/delete/:id", app.Remove)
+	router.POST("/api/books/edit/:id", app.Edit)
 
 	//{{.API}}/api/book/order/{{$book.ID}}
 	router.POST("/api/book/order/:id", app.GetPaymentIntent)

@@ -454,3 +454,92 @@ func (m *DatabaseModel) GetBookById(id int) (Book, error) {
 	fmt.Println(book)
 	return b, nil
 }
+
+func (m *DatabaseModel) RemoveBookFromDatabase(bookID int) error {
+	stmt := `
+			DELETE 
+				* 
+			FROM 
+				book 
+			WHERE 
+			    id = $1
+		`
+
+	_, err := m.DB.Exec(stmt, bookID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RetrieveAllBooksByEmail returns all books, which are linked to a user with email from arguments
+func (m *DatabaseModel) RetrieveAllBooksByEmail(email string) ([]Book, error) {
+	stmt := `
+			SELECT
+			    id, title, description,
+			    price, date_of_issue, quote_from,
+			    language, category, addcategory, author_id
+			FROM book
+				WHERE owner_email = $1;
+			`
+
+	var books []Book
+	rows, err := m.DB.Query(stmt, email)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	for rows.Next() {
+		book := DbBook{}
+		err = rows.Scan(
+			&book.ID,
+			&book.Title,
+			&book.Description,
+			&book.Price,
+			&book.DateOfIssue,
+			&book.QuoteFrom,
+			&book.Language,
+			&book.Category,
+			&book.AddCategory,
+			&book.AuthorID,
+		)
+
+		modelBook := Book{
+			ID:          book.ID,
+			Title:       book.Title,
+			Description: book.Description,
+			Price:       book.Price,
+			DateOfIssue: book.DateOfIssue,
+			QuoteFrom:   "",
+			Language:    "",
+			Category:    "",
+			AddCategory: "",
+			AuthorID:    book.AuthorID,
+		}
+
+		if book.QuoteFrom.Valid {
+			modelBook.QuoteFrom = book.QuoteFrom.String
+		}
+
+		if book.Language.Valid {
+			modelBook.Language = book.Language.String
+		}
+
+		if book.Category.Valid {
+			modelBook.Category = book.Category.String
+		}
+
+		if book.AddCategory.Valid {
+			modelBook.AddCategory = book.AddCategory.String
+		}
+
+		if err != nil {
+			return nil, err
+		}
+		books = append(books, modelBook)
+	}
+	return books, nil
+
+}

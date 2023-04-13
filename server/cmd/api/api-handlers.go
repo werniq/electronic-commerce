@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -236,10 +238,12 @@ func (app *application) GetPaginatedCatalogue(c *gin.Context) {
 	})
 }
 
+// IsAuthenticated handler is used to verify user authentication token.
 func (app *application) IsAuthenticated(c *gin.Context) {
 	return
 }
 
+// SendPasswordResetEmail receives user email from request body, and sends reset password link to that email
 func (app *application) SendPasswordResetEmail(c *gin.Context) {
 	var data ResetPasswordData
 	if err := c.ShouldBindJSON(&data); err != nil {
@@ -296,14 +300,17 @@ func (app *application) SendPasswordResetEmail(c *gin.Context) {
 //
 //}
 
+// GetPaymentIntent is used to process payments using stripe secret and stripe key.
 func (app *application) GetPaymentIntent(c *gin.Context) {
 	var payload StripePayload
+
 	err := c.ShouldBindJSON(&payload)
 	if err != nil {
 		c.JSON(http.StatusAccepted, gin.H{"error": err.Error()})
 		app.errorLog.Println(err)
 		return
 	}
+
 	amount, err := strconv.Atoi(payload.Amount)
 	amount = amount * 100
 	if err != nil {
@@ -320,16 +327,20 @@ func (app *application) GetPaymentIntent(c *gin.Context) {
 		return
 	}
 
-	_, err = app.database.GetBookById(bookID)
+	book, err := app.database.GetBookById(bookID)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		app.errorLog.Println(err)
 		return
 	}
 
-	//if book.Price != amount {
-	//
-	//}
+	if book.Price != amount {
+		c.JSON(400, gin.H{
+			"error": errors.New("payment amount is not enough"),
+		})
+		app.errorLog.Println("paid not enough")
+		return
+	}
 
 	card := cards.Card{
 		Secret:   app.cfg.stripe.secret,
@@ -357,8 +368,89 @@ func (app *application) GetPaymentIntent(c *gin.Context) {
 	}
 }
 
-func (app *application) Edit(c *gin.Context)    {}
-func (app *application) Details(c *gin.Context) {}
-func (app *application) Remove(c *gin.Context)  {}
-func (app *application) Delete(c *gin.Context)  {}
-func (app *application) GetAll(c *gin.Context)  {}
+// Edit retrieves book id from request parameters and edits book with information from request
+func (app *application) Edit(c *gin.Context) {
+	id := c.Param("id")
+	bookID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "book not found"})
+		app.errorLog.Println(err)
+		return
+	}
+
+	book, err := app.database.GetBookById(bookID)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": "book not found",
+		})
+		app.errorLog.Println(err)
+		return
+	}
+
+	var newBook models.Book
+
+	err = json.NewDecoder(c.Request.Body).Decode(&newBook)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	book.UpdateExistingBook(newBook)
+	c.JSON(200, gin.H{
+		"msg": "successfully edited book! changes will soon appear in catalogue :)",
+	})
+}
+
+// Remove retrieves book id from request parameters, and deletes book, which has same id
+func (app *application) Remove(c *gin.Context) {
+	id := c.Param("id")
+	bookID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	err = app.database.RemoveBookFromDatabase(bookID)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": "error removing book rom database: " + err.Error(),
+		})
+		app.errorLog.Println(err)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"msg": "successfully deleted book from database! it will soon disappear from catalogue.",
+	})
+}
+
+// UserProfile or user profile catalogue retrieves all books, which are linked to user email
+func (app *application) UserProfile(c *gin.Context) {
+	var email string
+	err := json.NewDecoder(c.Request.Body).Decode(&email)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	books, err := app.database.RetrieveAllBooksByEmail(email)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		app.errorLog.Println(err)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"books": books,
+	})
+}
+
+// google authorization, authentication
+// Implement shopping card
+// Finish reset password handler
+// Add ability to leave reviews, comments, and ratings
+// Product categories
+// User management
