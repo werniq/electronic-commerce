@@ -12,6 +12,24 @@ This is an e-commerce application built with Go and JavaScript, using PostgreSQL
 - Token-Based Authentication: Uses JWT to issue and verify access and refresh tokens
 - PostgreSQL: Uses PostgreSQL for data storage and management
 
+## Front end routes
+
+- `/catalogue/{page}`: Returns a paginated list of all products
+- `/create`: Allows administrators to create new products
+- `/edit/{id}`: Allows administrators to edit existing products
+- `/delete/{id}`: Allows administrators to delete existing products
+- `/details/{id}`: Returns details about a specific product
+- `/book/order/{id}`: Allows users to order a specific book
+- `/register`: Allows users to register for an account
+- `/login`: Allows users to login to their account
+- `/logout`: Allows users to logout of their account
+- `/my-profile`: Returns information about the current user's profile
+- `/charge-once`: Charges a user for a single book order
+- `/reset-password`: Allows users to reset their password
+- `/forgot-password`: Allows users to reset their password if they forget it
+
+
+
 ## API Documentation
 
 The following API endpoints are available for use:
