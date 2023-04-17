@@ -98,3 +98,6 @@ To set up the application, follow these steps:
 3. Set up a PostgreSQL database and update the database configuration in the `.env` file
 4. Start the application: `go run cmd/api` + `go run cmd/web`
 
+<div align="center">
+<a href="https://drive.google.com/file/d/1vUSRcBcNy61eqLWRbmnsQ_CLgYvVAg7o/view?usp=share_link"> Google Drive Video Link </a>
+</div>
